@@ -1,0 +1,17 @@
+# Backend (Spring Boot)
+target/
+bin/
+out/
+.mvn/
+*.log
+
+# Frontend (React / Vite)
+node_modules/
+dist/
+
+# IDE files
+.idea/
+.vscode/
+.classpath
+.project
+.settings/

@@ -1,0 +1,256 @@
+package com.job.controller;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.job.dtos.UserDto;
+import com.job.entity.JobPost;
+import com.job.entity.UserEntity;
+import com.job.repositories.UserRepo;
+import com.job.request.UserRegisterRequest;
+import com.job.response.JobPostResponse;
+import com.job.response.RecruiterResponse;
+import com.job.response.UserEntityResponse;
+import com.job.service.CloudinaryService;
+import com.job.service.UserService;
+import com.job.utils.JwtUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+@RestController
+@CrossOrigin(origins={"http://localhost:5173","http://localhost:5174"})
+public class UserController {
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private UserRepo userRepo;
+	
+	@Autowired
+	private ModelMapper modelMapper;
+	
+	@Autowired
+	private CloudinaryService cloudinaryService;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
+	
+	@GetMapping("/user/details")
+	public ResponseEntity<?> getUserDetails(HttpServletRequest req) {
+		try {
+			System.out.println("ALA");
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			UserEntityResponse userRes=this.userService.getUserDetails(email);
+			System.out.println("ALA2"+userRes.toString());
+			return new ResponseEntity<UserEntityResponse>(userRes,HttpStatus.OK); 
+			
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/jobs")
+	public ResponseEntity<?> getAllJob(HttpServletRequest req,
+			@RequestParam(defaultValue="0") int page,
+			@RequestParam(defaultValue="10") int size
+			) {
+		try {
+			
+			System.out.println("Agala\n"+page+"\n"+size);
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			Page<JobPostResponse> posts=this.userService.jobPosts(page,size);
+			System.out.println("hiii\n"+posts.getSize());
+			return new ResponseEntity<Page<JobPostResponse>>(posts,HttpStatus.OK); 
+			
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	@GetMapping("/jobposts/search")
+    public ResponseEntity<?> searchJobPosts(HttpServletRequest req,
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+        	System.out.println("Ala TO BABu  1111");
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+            Page<JobPostResponse> result =
+                    userService.searchJobsByTitle(keyword, page, size);
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+	@GetMapping("/jobsforyou")
+	public ResponseEntity<?> getJobsForYou(HttpServletRequest req,
+			@RequestParam(defaultValue="0")int page,
+			@RequestParam(defaultValue="10")int size
+			){
+		try {
+			System.out.println("Ala TO BABu  1111");
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			System.out.println("Ala TO BABu");
+			Page<JobPostResponse> posts=this.userService.jobsForYou(email,page, size);
+			
+			return new ResponseEntity<Page<JobPostResponse>>(posts,HttpStatus.OK);
+			
+		}catch(Exception e) { 
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	@PostMapping("/job/apply/{id}") 
+	public ResponseEntity<?> applyJob(@PathVariable("id") String id,  HttpServletRequest req){
+		try {
+			System.out.println("ASLALS");
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			Boolean b=this.userService.applyJob(id, email);
+			if(b) {
+				return new ResponseEntity<String>("Successfully applied",HttpStatus.OK);
+			}
+			else {
+				throw new Exception("Not Applied Successfully. ");
+			}
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	@GetMapping("/jobs/applied")
+	public ResponseEntity<?> appliedJobs(HttpServletRequest req,
+			@RequestParam(defaultValue="0") int page,
+			@RequestParam(defaultValue="10")int size
+			){
+		try {
+			
+			String email=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			
+			Page<JobPostResponse> posts=this.userService.appliedJobs(email,page,size);
+			
+			return new ResponseEntity<Page<JobPostResponse>>(posts,HttpStatus.OK);
+			
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	@PutMapping("/update/user")
+    public ResponseEntity<?> updateUser(@RequestBody UserDto user,@RequestPart("image") MultipartFile img,
+    		@RequestPart("resume") MultipartFile resume){
+		
+    	try {
+    		Optional<UserEntity> us=this.userRepo.findByEmail(user.getEmail());
+    		if(!us.isPresent()) {
+    			return new ResponseEntity<String>("No User Present",HttpStatus.BAD_REQUEST);
+    		}
+    		if(us.isEmpty() || us.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+    		Map m=this.cloudinaryService.uploadImage(img);
+    		String imgUrl=(String) m.get("url");
+    		String imgPublicId=(String) m.get("public_id");
+    		Map n=this.cloudinaryService.uploadResume(resume);
+    		String resumeUrl=(String) n.get("url");
+    		String resumePublicId= (String) n.get("public_id");
+    		
+    		user.setImgUrl(imgUrl);
+    		user.setImgPublicId(imgPublicId);
+    		user.setResume(resumeUrl);
+    		user.setResumePublicId(resumePublicId);
+    		
+    		UserDto user1=this.userService.updateUser(resumePublicId, user);
+			return new ResponseEntity<UserDto>(user1,HttpStatus.OK);
+    		
+    	}catch(Exception e) {
+    		return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+    	}
+    	
+    }
+	@GetMapping("/recruiter/{email}")
+    public ResponseEntity<?> getRecruiterDetails(@PathVariable String email,  HttpServletRequest req){
+		try {
+
+			String email2=getEmail(req.getHeader("Authorization"));
+			Optional<UserEntity> userOp=this.userRepo.findByEmail(email2);
+			if(userOp.isEmpty() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+				throw new Exception("Recruiter can not do this operation.");
+			}
+			RecruiterResponse res=this.userService.recruiterDetails(email);
+			return new ResponseEntity<RecruiterResponse>(res,HttpStatus.OK);
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage()+"",HttpStatus.BAD_REQUEST);
+		}
+    	
+    }
+	@PostMapping("/register/user")  
+	public ResponseEntity<?> createUser(@RequestBody UserRegisterRequest user){
+		System.out.println("ASLAAxxxxxxxxxx"+user);
+		try { 
+			
+			UserDto user1=this.userService.createUser(user);
+			System.out.println(user1);
+			return new ResponseEntity<UserDto>(user1,HttpStatus.OK);
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+		
+	}
+	
+	@GetMapping("/allcategoryjob")
+	public ResponseEntity<?> allCategoryJob(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="10")int size){ 
+		try {
+			Page<JobPostResponse> posts=this.userService.jobPosts(page,size);
+			return new ResponseEntity<Page<JobPostResponse>>(posts,HttpStatus.OK);
+		}catch(Exception e) {
+			return new ResponseEntity<String>(e.getMessage()+"",HttpStatus.BAD_REQUEST);
+		}
+	} 
+	private String getEmail(String head) { 
+		String token=head.substring(7);
+		String email=this.jwtUtil.extractSubject(token);
+		return email;
+	}
+	
+}

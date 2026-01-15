@@ -1,0 +1,66 @@
+package com.job.controller;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.job.entity.UserEntity;
+import com.job.repositories.UserRepo;
+import com.job.request.LoginRequest;
+import com.job.response.UserLoginRes;
+import com.job.service.MyUserDetailsService;
+import com.job.utils.JwtUtil;
+
+@RestController
+@CrossOrigin(origins={"https://jobcrackk.netlify.app" ,"https://jobcrackr.netlify.app"})
+public class AuthController {
+	@Autowired
+	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private MyUserDetailsService myUserDetailsService;
+
+	@Autowired
+	private JwtUtil jwtUtil;
+	
+	@Autowired
+	private UserRepo userRepo;
+	
+	@PostMapping("/login")
+	public ResponseEntity<?> userLogin(@RequestBody LoginRequest req){
+		Optional<UserEntity> userOp=this.userRepo.findByEmail(req.getEmail());
+		if(!userOp.isPresent() || userOp.get().getRole().equalsIgnoreCase("recruiter")) {
+			return new ResponseEntity<String>("Bad Credentials",HttpStatus.BAD_REQUEST);
+		}
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(),req.getPassword()));
+		UserDetails userDetails=myUserDetailsService.loadUserByUsername(req.getEmail());
+		String token=jwtUtil.generateJwtToken(userDetails.getUsername());
+		
+		UserLoginRes userLoginRes=new UserLoginRes(token); 
+		return new ResponseEntity<UserLoginRes>(userLoginRes,HttpStatus.OK);
+	}
+	@PostMapping("/login/hr")
+	public ResponseEntity<?> recrLogin(@RequestBody LoginRequest req){
+		 System.out.println("AYAYA"+req.getEmail()+" "+req.getPassword());
+		Optional<UserEntity> userOp=this.userRepo.findByEmail(req.getEmail());
+		if(!userOp.isPresent() || userOp.get().getRole().equals("user")) {
+			return new ResponseEntity<String>("Bad Credentials",HttpStatus.BAD_REQUEST);
+		}
+		
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(),req.getPassword()));
+		UserDetails userDetails=myUserDetailsService.loadUserByUsername(req.getEmail());
+		String token=jwtUtil.generateJwtToken(userDetails.getUsername());
+		System.out.println("ASLAA"+userOp.get());
+		UserLoginRes userLoginRes=new UserLoginRes(token);
+		return new ResponseEntity<UserLoginRes>(userLoginRes,HttpStatus.OK);
+	}
+} 

@@ -1,0 +1,43 @@
+.profile-container {
+  margin-top: 40px;
+}
+
+.profile-card {
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 20px;
+  background: #ffffff;
+}
+
+.profile-img {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #0d6efd;
+}
+
+.section-title {
+  font-weight: 600;
+  color: #0d6efd;
+  margin-bottom: 10px;
+}
+
+.skill-badge {
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  display: inline-block;
+  font-size: 0.85rem;
+}
+
+textarea.form-control {
+  min-height: 120px;
+}
+
+.card p {
+  margin-bottom: 6px;
+}
