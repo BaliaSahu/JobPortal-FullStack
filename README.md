@@ -10,7 +10,9 @@ The application supports JWT-based authentication and provides separate interfac
 👔 Recruiter (recruiter-app)
 
 ✅ Create, update, and manage job postings
+
 ✅ View applicants for each job
+
 ✅ View applicant profiles (resume, skills, education, certifications, experience, etc.)
 ✅ Contact candidates directly
 ✅ Search candidates by skills
