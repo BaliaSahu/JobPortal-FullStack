@@ -34,6 +34,14 @@ const Home = () => {
               <i className="bi bi-briefcase me-2"></i>
               Manage Jobs
             </Link>
+            <a
+              href="https://jobcrackk.netlify.app/"
+              className="btn btn-warning fw-semibold"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              I am a Job Seeker
+            </a>
           </div>
         </div>
       </div>
