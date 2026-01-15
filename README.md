@@ -4,20 +4,30 @@ A full-stack job portal application built with ReactJS, Bootstrap, and Spring Bo
 The application supports JWT-based authentication and provides separate interfaces for Recruiters and Job Seekers.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
+## 🔗 Live Application Links
 
+- 👤 **Job Seekers**  
+  👉 https://jobcrackk.netlify.app
+
+- 🛠️ **Admin Panel**  
+  👉 https://jobcrackr.netlify.app
+
+- ⚙️ **Backend API**  
+  👉 https://jobportalapi-2.onrender.com
+  
 ✨ Features
 
 👔 Recruiter (recruiter-app)
 
-✅ Create, update, and manage job postings
+  ✅ Create, update, and manage job postings
 
-✅ View applicants for each job
+  ✅ View applicants for each job
+  
+  ✅ View applicant profiles (resume, skills, education, certifications, experience, etc.)
 
-✅ View applicant profiles (resume, skills, education, certifications, experience, etc.)
-
-✅ Contact candidates directly
-
-✅ Search candidates by skills
+  ✅ Contact candidates directly
+  
+  ✅ Search candidates by skills
 
 
 👩‍💻 Job Seeker (user-app)
