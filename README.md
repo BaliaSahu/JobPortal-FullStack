@@ -9,7 +9,7 @@ The application supports JWT-based authentication and provides separate interfac
 - 👤 **Job Seekers**  
   👉 https://jobcrackk.netlify.app
 
-- 🛠️ **Admin Panel**  
+- 🛠️ **Recruiter**  
   👉 https://jobcrackr.netlify.app
 
 - ⚙️ **Backend API**  
