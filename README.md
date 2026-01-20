@@ -1,5 +1,5 @@
 🚀 Job Portal
-
+ 
 A full-stack job portal application built with ReactJS, Bootstrap, and Spring Boot, using MongoDB as the database.
 The application supports JWT-based authentication and provides separate interfaces for Recruiters and Job Seekers.
 
